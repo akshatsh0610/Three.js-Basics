@@ -3,6 +3,7 @@ import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
 import * as dat from 'dat.gui';
 
 const renderer = new THREE.WebGLRenderer();
+renderer.shadowMap.enabled=true;
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
@@ -28,6 +29,7 @@ const planeMaterial=new THREE.MeshStandardMaterial({color:'white',side:THREE.Dou
 const plane=new THREE.Mesh(planeGeometry,planeMaterial);
 scene.add(plane);
 plane.rotation.x=-0.5*Math.PI;
+plane.receiveShadow=true;
 
 const gridHelper=new THREE.GridHelper(30);
 scene.add(gridHelper);
@@ -36,9 +38,22 @@ const sphereGeometry=new THREE.SphereGeometry(4,50,50);
 const sphereMaterial=new THREE.MeshStandardMaterial({color:'blue',wireframe:true});
 const sphere=new THREE.Mesh(sphereGeometry,sphereMaterial);
 scene.add(sphere);
+sphere.castShadow=true;
 
 const ambientLight=new THREE.AmbientLight(0x333333,0.5);
 scene.add(ambientLight)
+
+const directionalLight=new THREE.DirectionalLight(0xFFFFFF,0.8);
+scene.add(directionalLight);
+directionalLight.position.set(-30,50,0);
+directionalLight.castShadow=true;
+directionalLight.shadow.camera.bottom=-15;
+
+const dLightHelper = new THREE.DirectionalLightHelper(directionalLight,3);
+scene.add(dLightHelper);
+
+const dLightShadowHelper=new THREE.CameraHelper(directionalLight.shadow.camera);
+scene.add(dLightShadowHelper);
 
 const gui=new dat.GUI();
 
@@ -64,7 +79,7 @@ function animate(time){
     step+=options.speed;
     //sphere.position.x=10*Math.abs(Math.sin(step));
     sphere.position.y=10*Math.abs(Math.sin(step));
-    sphere.position.z=15*Math.abs(Math.sin(step));
+    //sphere.position.z=15*Math.abs(Math.sin(step));
     renderer.render(scene,camera);
 }
 
