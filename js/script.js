@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
 import * as dat from 'dat.gui';
-
+import stars from '../stars.jpg';
+import nebula from '../nebula.jpg';
 const renderer = new THREE.WebGLRenderer();
 renderer.shadowMap.enabled=true;
 renderer.setSize( window.innerWidth, window.innerHeight );
@@ -40,27 +41,55 @@ const sphere=new THREE.Mesh(sphereGeometry,sphereMaterial);
 scene.add(sphere);
 sphere.castShadow=true;
 
-const ambientLight=new THREE.AmbientLight(0x333333,0.5);
+const ambientLight=new THREE.AmbientLight(0xFFFFFF,0.5);
 scene.add(ambientLight)
 
-const directionalLight=new THREE.DirectionalLight(0xFFFFFF,0.8);
-scene.add(directionalLight);
-directionalLight.position.set(-30,50,0);
-directionalLight.castShadow=true;
-directionalLight.shadow.camera.bottom=-15;
+// const directionalLight=new THREE.DirectionalLight(0xFFFFFF,0.8);
+// scene.add(directionalLight);
+// directionalLight.position.set(-30,50,0);
+// directionalLight.castShadow=true;
+// directionalLight.shadow.camera.bottom=-15;
 
-const dLightHelper = new THREE.DirectionalLightHelper(directionalLight,3);
-scene.add(dLightHelper);
+// const dLightHelper = new THREE.DirectionalLightHelper(directionalLight,3);
+// scene.add(dLightHelper);
 
-const dLightShadowHelper=new THREE.CameraHelper(directionalLight.shadow.camera);
-scene.add(dLightShadowHelper);
+// const dLightShadowHelper=new THREE.CameraHelper(directionalLight.shadow.camera);
+// scene.add(dLightShadowHelper);
+
+const spotLight=new THREE.SpotLight(0xFFFFFF);
+scene.add(spotLight);
+spotLight.position.set(-100,100,0);
+spotLight.castShadow=true;
+spotLight.angle=0.1;
+const spotLightHelper=new THREE.SpotLightHelper(spotLight);
+scene.add(spotLightHelper);
+
+// scene.fog=new THREE.Fog(0xFFFFFF,0,200);
+scene.fog=new THREE.FogExp2(0xFFFFFF,0.01);
+
+//renderer.setClearColor(0xFFEA00);
+
+const textureLoader=new THREE.TextureLoader();
+// scene.background=textureLoader.load(stars);
+const cubeTextureLoader=new THREE.CubeTextureLoader();
+scene.background=cubeTextureLoader.load([
+    nebula,
+    nebula,
+    stars,
+    stars,
+    stars,
+    stars
+]);
 
 const gui=new dat.GUI();
 
 const options={
     sphereColor:'#ffea00',
     wireframe:true,
-    speed:0.01
+    speed:0.01,
+    angle:0.1,
+    penumbra:0,
+    intensity:1
 }
 
 gui.addColor(options,'sphereColor').onChange(function(e){
@@ -70,6 +99,9 @@ gui.add(options,'wireframe').onChange(function(e){
     sphere.material.wireframe=e;
 })
 gui.add(options,'speed',0,0.1);
+gui.add(options,'angle',0,1);
+gui.add(options,'penumbra',0,1);
+gui.add(options,'intensity',0,1);
 let step=0;
 
 
@@ -80,6 +112,10 @@ function animate(time){
     //sphere.position.x=10*Math.abs(Math.sin(step));
     sphere.position.y=10*Math.abs(Math.sin(step));
     //sphere.position.z=15*Math.abs(Math.sin(step));
+    spotLight.angle=options.angle;
+    spotLight.intensity=options.intensity;
+    spotLight.penumbra=options.penumbra;
+    spotLightHelper.update();
     renderer.render(scene,camera);
 }
 
